@@ -108,3 +108,72 @@ func (s *Service) SendMoney(ctx context.Context, senderID uuid.UUID, receiverID 
 
 	return nil
 }
+
+func (s *Service) DepositMoney(ctx context.Context, walletID uuid.UUID, amount float64) error {
+	conn, err := s.primaryDB.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+				return
+			}
+		}
+	}()
+	walletbalance, err := s.repo.GetBalance(ctx, walletID)
+	if err != nil {
+		return err
+	}
+	if err := s.repo.UpdateBalance(ctx, walletID, walletbalance+amount, tx); err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) WithdrawMoney(ctx context.Context, walletID uuid.UUID, amount float64) error {
+	conn, err := s.primaryDB.Acquire(ctx)
+	if err != nil {
+		return err
+	}
+	defer conn.Release()
+	tx, err := conn.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback(ctx)
+			if rollbackErr != nil {
+				err = errors.Join(err, rollbackErr)
+				return
+			}
+		}
+	}()
+	walletbalance, err := s.repo.GetBalance(ctx, walletID)
+	if err != nil {
+		return err
+	}
+	if (walletbalance - amount) < 0 {
+		return api.ErrInsufficientBalance
+	}
+	if err := s.repo.UpdateBalance(ctx, walletID, walletbalance-amount, tx); err != nil {
+		return err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}

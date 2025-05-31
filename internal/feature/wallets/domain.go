@@ -54,7 +54,7 @@ type CreateWalletResponse struct {
 
 type SendCoinRequest struct {
 	WalletID       uuid.UUID     `json:"wallet_id" validate:"required"`
-	SenderWalletID uuid.UUID     `json:"sender_id" validate:"required"`
+	SenderWalletID *uuid.UUID    `json:"sender_id" validate:"omitempty"`
 	Type           OperationType `json:"type" validate:"required"`
 	Amount         float64       `json:"amount" validate:"required"`
 }

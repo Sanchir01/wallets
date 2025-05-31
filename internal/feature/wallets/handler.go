@@ -131,6 +131,15 @@ func (h *Handler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// @Tags wallet
+// @Description send money
+// @Accept json
+// @Produce json
+// @Param input body SendCoinRequest true "send money"
+// @Success 200 {object}  SendCoinResponse
+// @Failure 400,404 {object}  api.Response
+// @Failure 500 {object}  api.Response
+// @Router /wallet [post]
 func (h *Handler) SendMoney(w http.ResponseWriter, r *http.Request) {
 	const op = "user.Handler.SendMoney"
 	log := h.Log.With(
@@ -144,7 +153,7 @@ func (h *Handler) SendMoney(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info("request body decoded", slog.Any("request", req))
+	log.Error("request body decoded", slog.Any("request", req))
 
 	if err := validator.New().Struct(req); err != nil {
 		log.Error("invalid request", sl.Err(err))
@@ -152,15 +161,49 @@ func (h *Handler) SendMoney(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := h.service.SendMoney(r.Context(), req.SenderWalletID, req.WalletID, req.Amount, req.Type)
-	if err != nil {
-		log.Error("send money failed", sl.Err(err))
-		render.JSON(w, r, api.Error("invalid request"))
-		return
+	if req.Type == OperationTypeDeposit {
+		err := h.service.DepositMoney(r.Context(), req.WalletID, req.Amount)
+		if err != nil {
+			log.Error("deposit money failed", sl.Err(err))
+			render.JSON(w, r, api.Error("invalid request"))
+			return
+		}
+		log.Info("deposit money success")
+		render.JSON(w, r, SendCoinResponse{
+			Response: api.OK(),
+			OK:       "deposit money success",
+		})
 	}
-	log.Info("send money success")
-	render.JSON(w, r, SendCoinResponse{
-		Response: api.OK(),
-		OK:       "send money success",
-	})
+
+	if req.Type == OperationTypeWithdraw {
+		err := h.service.WithdrawMoney(r.Context(), req.WalletID, req.Amount)
+		if err != nil {
+			log.Error("deposit money failed", sl.Err(err))
+			render.JSON(w, r, api.Error("invalid request"))
+			return
+		}
+		log.Info("deposit money success")
+		render.JSON(w, r, SendCoinResponse{
+			Response: api.OK(),
+			OK:       "deposit money success",
+		})
+	}
+	if req.Type == OperationTypeTransfer {
+		if req.SenderWalletID == nil {
+			log.Error("sender wallet id is nil")
+			render.JSON(w, r, api.Error("invalid request"))
+			return
+		}
+		err := h.service.SendMoney(r.Context(), *req.SenderWalletID, req.WalletID, req.Amount, req.Type)
+		if err != nil {
+			log.Error("send money failed", sl.Err(err))
+			render.JSON(w, r, api.Error("invalid request"))
+			return
+		}
+		log.Info("send money success")
+		render.JSON(w, r, SendCoinResponse{
+			Response: api.OK(),
+			OK:       "send money success",
+		})
+	}
 }

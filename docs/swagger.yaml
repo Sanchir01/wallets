@@ -40,6 +40,39 @@ definitions:
       response:
         $ref: '#/definitions/api.Response'
     type: object
+  wallets.OperationType:
+    enum:
+    - DEPOSIT
+    - WITHDRAW
+    - TRANSFER
+    type: string
+    x-enum-varnames:
+    - OperationTypeDeposit
+    - OperationTypeWithdraw
+    - OperationTypeTransfer
+  wallets.SendCoinRequest:
+    properties:
+      amount:
+        type: number
+      sender_id:
+        type: string
+      type:
+        $ref: '#/definitions/wallets.OperationType'
+      wallet_id:
+        type: string
+    required:
+    - amount
+    - sender_id
+    - type
+    - wallet_id
+    type: object
+  wallets.SendCoinResponse:
+    properties:
+      balance:
+        type: string
+      response:
+        $ref: '#/definitions/api.Response'
+    type: object
   wallets.Wallet:
     properties:
       balance:
@@ -63,6 +96,39 @@ info:
   title: "\U0001F680 Effective Mobile"
   version: 0.0.1
 paths:
+  /wallet:
+    post:
+      consumes:
+      - application/json
+      description: send money
+      parameters:
+      - description: send money
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/wallets.SendCoinRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wallets.SendCoinResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Response'
+      tags:
+      - wallet
   /wallets:
     get:
       consumes:

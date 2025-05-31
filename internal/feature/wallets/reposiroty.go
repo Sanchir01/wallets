@@ -3,6 +3,8 @@ package wallets
 import (
 	"context"
 
+	"errors"
+
 	sq "github.com/Masterminds/squirrel"
 	api "github.com/Sanchir01/wallets/pkg/lib/api/response"
 	"github.com/google/uuid"
@@ -92,11 +94,14 @@ func (r *Repository) UpdateBalance(ctx context.Context, walletID uuid.UUID, bala
 		return api.ErrQueryString
 	}
 	cmdTag, err := tx.Exec(ctx, query, args...)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return api.ErrNotFoundById
+	}
 	if err != nil {
 		return err
 	}
 	if cmdTag.RowsAffected() == 0 {
-		return err
+		return api.ErrNotFoundById
 	}
 	return nil
 }

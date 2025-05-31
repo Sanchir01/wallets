@@ -19,6 +19,57 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/wallet": {
+            "post": {
+                "description": "send money",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallet"
+                ],
+                "parameters": [
+                    {
+                        "description": "send money",
+                        "name": "input",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/wallets.SendCoinRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/wallets.SendCoinResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/wallets": {
             "get": {
                 "description": "get all wallets",
@@ -217,6 +268,53 @@ const docTemplate = `{
             "properties": {
                 "balance": {
                     "type": "number"
+                },
+                "response": {
+                    "$ref": "#/definitions/api.Response"
+                }
+            }
+        },
+        "wallets.OperationType": {
+            "type": "string",
+            "enum": [
+                "DEPOSIT",
+                "WITHDRAW",
+                "TRANSFER"
+            ],
+            "x-enum-varnames": [
+                "OperationTypeDeposit",
+                "OperationTypeWithdraw",
+                "OperationTypeTransfer"
+            ]
+        },
+        "wallets.SendCoinRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "sender_id",
+                "type",
+                "wallet_id"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "sender_id": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/wallets.OperationType"
+                },
+                "wallet_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "wallets.SendCoinResponse": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "string"
                 },
                 "response": {
                     "$ref": "#/definitions/api.Response"
