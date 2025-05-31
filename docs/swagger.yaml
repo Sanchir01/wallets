@@ -1,0 +1,157 @@
+basePath: /api/v1
+definitions:
+  api.Response:
+    properties:
+      error:
+        type: string
+      status:
+        type: string
+    type: object
+  wallets.CreateWalletRequest:
+    properties:
+      balance:
+        type: number
+      currency:
+        type: string
+    required:
+    - balance
+    - currency
+    type: object
+  wallets.CreateWalletResponse:
+    properties:
+      balance:
+        type: string
+      response:
+        $ref: '#/definitions/api.Response'
+    type: object
+  wallets.GetAllWalletsResponse:
+    properties:
+      response:
+        $ref: '#/definitions/api.Response'
+      wallets:
+        items:
+          $ref: '#/definitions/wallets.Wallet'
+        type: array
+    type: object
+  wallets.GetBalanceResponse:
+    properties:
+      balance:
+        type: number
+      response:
+        $ref: '#/definitions/api.Response'
+    type: object
+  wallets.Wallet:
+    properties:
+      balance:
+        type: number
+      created_at:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      updated_at:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: GitHub
+    url: https://github.com/Sanchir01
+  description: This is a sample server celler
+  termsOfService: http://swagger.io/terms/
+  title: "\U0001F680 Effective Mobile"
+  version: 0.0.1
+paths:
+  /wallets:
+    get:
+      consumes:
+      - application/json
+      description: get all wallets
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wallets.GetAllWalletsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Response'
+      tags:
+      - wallet
+  /wallets/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get balance wallet by id
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wallets.GetBalanceResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Response'
+      tags:
+      - wallet
+  /wallets/create:
+    post:
+      consumes:
+      - application/json
+      description: get balance wallet by id
+      parameters:
+      - description: create wallet
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/wallets.CreateWalletRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/wallets.CreateWalletResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Response'
+      tags:
+      - wallet
+swagger: "2.0"
