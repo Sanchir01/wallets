@@ -73,6 +73,7 @@ func (h *Handler) GetBalanceWallets(w http.ResponseWriter, r *http.Request) {
 	uuidID, err := uuid.Parse(id)
 	if err != nil {
 		log.Error("invalid UUID format", sl.Err(err))
+		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, api.Error("invalid id format"))
 		return
 	}
@@ -107,6 +108,7 @@ func (h *Handler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 	var req CreateWalletRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		log.Error("failed to decode request body", slog.Any("err", err))
+		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, api.Error("Ошибка при валидации тела"))
 		return
 	}
@@ -115,12 +117,14 @@ func (h *Handler) CreateWallet(w http.ResponseWriter, r *http.Request) {
 
 	if err := validator.New().Struct(req); err != nil {
 		log.Error("invalid request", sl.Err(err))
+		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, api.Error("invalid request"))
 		return
 	}
 	err := h.service.CreateWallet(r.Context(), req.Currency, req.Balance)
 	if err != nil {
 		log.Error("fail get all users", sl.Err(err))
+		render.Status(r, http.StatusBadRequest)
 		render.JSON(w, r, api.Error("invalid request"))
 		return
 	}

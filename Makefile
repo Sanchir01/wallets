@@ -44,3 +44,5 @@ docker-app: docker-build docker
 
 compose-prod:
 	docker compose -f docker-compose.prod.yaml up --build -d
+testing:
+	go test -v -count=1  ./test/...
