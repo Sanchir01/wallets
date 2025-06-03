@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    command: make run
+    command: /main
     restart: always
     depends_on:
       - db

@@ -10,6 +10,19 @@ COPY . .
 
 RUN go mod download
 
-RUN go build -o .bin/main cmd/main/main.go
+RUN make build
 
-CMD ["make","run"]
+
+FROM alpine:3.20 AS runner
+
+WORKDIR /app
+
+COPY --from=builder /app/.bin/main /
+
+COPY config config
+
+COPY .env.prod .env.prod
+
+ENV ENV_FILE=.env.prod
+
+CMD ["/main"]
